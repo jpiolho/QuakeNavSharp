@@ -10,7 +10,18 @@ namespace QuakeNavSharp.Navigation
     {
         public class Link
         {
-            public Node Parent { get; private set; }
+            [Obsolete("Use Node property instead")]
+            public Node Parent => Node;
+
+            /// <summary>
+            /// Returns the Node where this link belongs to.
+            /// </summary>
+            public Node Node { get; private set; }
+
+            /// <summary>
+            /// Returns the graph where this link belongs to.
+            /// </summary>
+            public NavigationGraph Graph => Node.Graph;
 
 
             public Node Target { get; set; }
@@ -18,9 +29,9 @@ namespace QuakeNavSharp.Navigation
             public Traversal Traversal { get; set; }
             public Edict Edict { get; set; }
 
-            internal Link(Node parent)
+            internal Link(Node node)
             {
-                this.Parent = parent;
+                this.Node = node;
             }
         }
     }
