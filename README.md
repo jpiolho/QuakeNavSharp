@@ -1,6 +1,6 @@
 # QuakeNavSharp
 
-A .NET Core library to manipulate Quake 2021 (Enhanced) bot navigation.
+A .NET Core library to handle Quake 2021 (Enhanced) bot navigation files.
 
 ## Features
 
