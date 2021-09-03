@@ -66,6 +66,14 @@ namespace QuakeNavSharp.Navigation
 
         public void RemoveAt(int index)
         {
+            // Delete all links to this node
+            foreach(var node in _list)
+            {
+                for (var i = node.Links.Count - 1; i >= 0; i--)
+                    if (node.Links[i].Target == node)
+                        node.Links.RemoveAt(i);
+            }
+
             // Subtract 1 from the id of all the nodes above this one
             for (var i = index+1; i < _list.Count; i++)
                 _list[i].Id--;
