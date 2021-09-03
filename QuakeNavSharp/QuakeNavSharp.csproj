@@ -2,6 +2,24 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <Authors>JPiolho</Authors>
+    <Company />
+    <Product />
+    <Description>A .NET Core library for handling Quake 2021 Enhanced bot .nav files.</Description>
+    <PackageProjectUrl>https://github.com/jpiolho/QuakeNavSharp</PackageProjectUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <RepositoryUrl>https://github.com/jpiolho/QuakeNavSharp</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>quake quakeenhanced nav bot</PackageTags>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Copyright>Copyright (c) 2021 Jorge "JPiolho" Martins</Copyright>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
