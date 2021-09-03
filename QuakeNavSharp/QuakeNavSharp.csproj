@@ -13,6 +13,7 @@
     <PackageTags>quake quakeenhanced nav bot</PackageTags>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Copyright>Copyright (c) 2021 Jorge "JPiolho" Martins</Copyright>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
