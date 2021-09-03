@@ -9,7 +9,12 @@ A .NET Core library to manipulate Quake 2021 (Enhanced) bot navigation.
 * **NavJson support**: Convert navigation graphs from and to NavJson format. A git friendly format that represents a navigation graph.
 
 
-## Quick start
+## Quickstart
+**Nuget**:  
+[![NuGet](https://img.shields.io/nuget/dt/QuakeNavSharp.svg)](https://www.nuget.org/packages/QuakeNavSharp/)  
+`Install-Package QuakeNavSharp`
+
+## Usage example
 
 ```csharp
 // Loading a nav file
