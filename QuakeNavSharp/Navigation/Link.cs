@@ -8,7 +8,7 @@ namespace QuakeNavSharp.Navigation
 {
     public sealed partial class NavigationGraph
     {
-        public class Link
+        public class Link : IdentifiedComponentBase
         {
             [Obsolete("Use Node property instead")]
             public Node Parent => Node;

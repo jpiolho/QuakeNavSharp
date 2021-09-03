@@ -6,8 +6,26 @@ namespace QuakeNavSharp.Navigation
 {
     public sealed partial class NavigationGraph
     {
-        public NavigationGraphNodeList Nodes { get; private set; } = new NavigationGraphNodeList();
+        public IdentifiedComponentList<Node> Nodes { get; private set; }
 
+
+        public NavigationGraph()
+        {
+            Nodes = new IdentifiedComponentList<Node>();
+            Nodes.Removing += Nodes_Removing;
+        }
+
+        private void Nodes_Removing(object sender, int index, Node obj)
+        {
+            // Delete all links towards the node being removed
+            foreach(var node in Nodes)
+            {
+                for (var i = node.Links.Count - 1; i >= 0;i--) {
+                    if (node.Links[i].Target == obj)
+                        node.Links.RemoveAt(i);
+                }
+            }
+        }
 
         public Node NewNode()
         {

@@ -6,11 +6,10 @@ namespace QuakeNavSharp.Navigation
 {
     public sealed partial class NavigationGraph
     {
-        public class Node
+        public class Node : IdentifiedComponentBase
         {
             public const int MaximumLinks = 12;
 
-            public int Id { get; internal set; }
             [Obsolete("Use Graph property instead")]
             public NavigationGraph Owner => Graph;
 
@@ -22,7 +21,7 @@ namespace QuakeNavSharp.Navigation
             public NodeFlags Flags { get; set; }
             public Vector3 Origin { get; set; }
             public ushort Radius { get; set; }
-            public List<Link> Links { get; private set; } = new List<Link>(MaximumLinks);
+            public IdentifiedComponentList<Link> Links { get; private set; } = new IdentifiedComponentList<Link>(MaximumLinks);
 
             internal Node(int id, NavigationGraph graph)
             {
