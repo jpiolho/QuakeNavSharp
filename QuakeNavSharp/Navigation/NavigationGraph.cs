@@ -156,6 +156,11 @@ namespace QuakeNavSharp.Navigation
 
                         file.Traversals.Add(fileTraversal);
                     }
+                    else
+                    {
+                        // If none available, set 0xFFFF
+                        fileLink.TraversalIndex = 0xFFFF;
+                    }
 
                     // Add edict if available
                     if (link.Edict != null)
