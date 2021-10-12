@@ -25,11 +25,29 @@ namespace QuakeNavSharp
         }
 
 
+        public static async Task ReadAsync(this Stream stream,Stream targetStream,int count,bool positionZero,CancellationToken cancellationToken=default)
+        {
+            if (positionZero)
+                targetStream.Position = 0;
+
+            try
+            {
+                await stream.ReadAsync(targetStream, count, cancellationToken);
+            }
+            finally
+            {
+                if(positionZero)
+                    targetStream.Position = 0;
+            }
+
+        }
+
         public static async Task ReadAsync(this Stream stream, Stream targetStream,int count,CancellationToken cancellationToken=default)
         {
             const int bufferLength = 1024 * 32; // 32kb
             var pool = ArrayPool<byte>.Shared;
             var buffer = pool.Rent(bufferLength);
+
 
             try
             {

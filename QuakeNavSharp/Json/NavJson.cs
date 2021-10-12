@@ -12,11 +12,43 @@ namespace QuakeNavSharp.Json
 {
     public class NavJson
     {
+        public class Edict
+        {
+            public Vector3 Mins { get; set; }
+            public Vector3 Maxs { get; set; }
+            public int Targetname { get; set; }
+            public int Classname { get; set; }
+        }
+
+        public class Link
+        {
+            public Vector3 Target { get; set; }
+            public int Type { get; set; }
+            public Vector3[] Traversal { get; set; }
+            public Edict Edict { get; set; }
+        }
+
+        public class MapInfo
+        {
+            public string Name { get; set; }
+            public string Author { get; set; }
+            public string Filename { get; set; }
+            public string[] Urls { get; set; }
+        }
+
+        public class Node
+        {
+            public Vector3 Origin { get; set; }
+            public int Flags { get; set; }
+            public Link[] Links { get; set; }
+            public int Radius { get; set; }
+        }
+
         public int Version { get; set; }
-        public NavJsonMap Map { get; set; }
+        public MapInfo Map { get; set; }
         public string[] Contributors { get; set; }
         public string Comments { get; set; }
-        public NavJsonNode[] Nodes { get; set; }
+        public Node[] Nodes { get; set; }
 
         private static JsonSerializerOptions _serializerOptions;
 
@@ -122,24 +154,24 @@ namespace QuakeNavSharp.Json
             var json = new NavJson();
 
             json.Version = 1;
-            json.Nodes = new NavJsonNode[navigation.Nodes.Count];
+            json.Nodes = new Node[navigation.Nodes.Count];
 
             // Create nodes
             for (var nodeId = 0; nodeId < navigation.Nodes.Count; nodeId++)
             {
                 var node = navigation.Nodes[nodeId];
-                var jsonNode = new NavJsonNode();
+                var jsonNode = new Node();
 
                 jsonNode.Flags = (int)node.Flags;
                 jsonNode.Radius = node.Radius;
                 jsonNode.Origin = node.Origin;
 
                 // Create links
-                jsonNode.Links = new NavJsonLink[node.Links.Count];
+                jsonNode.Links = new Link[node.Links.Count];
                 for (var linkId = 0; linkId < node.Links.Count; linkId++)
                 {
                     var link = node.Links[linkId];
-                    var jsonLink = new NavJsonLink();
+                    var jsonLink = new Link();
 
                     jsonLink.Target = link.Target.Origin;
                     jsonLink.Type = (int)link.Type;
@@ -157,7 +189,7 @@ namespace QuakeNavSharp.Json
                     // Create edict
                     if (link.Edict != null)
                     {
-                        jsonLink.Edict = new NavJsonEdict()
+                        jsonLink.Edict = new Edict()
                         {
                             Maxs = link.Edict.Maxs,
                             Mins = link.Edict.Mins,

@@ -1,11 +1,117 @@
 ﻿using QuakeNavSharp.Files;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace QuakeNavSharp.Navigation
 {
-    public sealed partial class NavigationGraph
+    public class NavigationGraph
     {
+        public class Edict
+        {
+            public Vector3 Mins { get; set; }
+            public Vector3 Maxs { get; set; }
+
+            public int Targetname { get; set; }
+            public int Classname { get; set; }
+        }
+
+        public class Link : IdentifiedComponentBase
+        {
+            [Obsolete("Use Node property instead")]
+            public Node Parent => Node;
+
+            /// <summary>
+            /// Returns the Node where this link belongs to.
+            /// </summary>
+            public Node Node { get; private set; }
+
+            /// <summary>
+            /// Returns the graph where this link belongs to.
+            /// </summary>
+            public NavigationGraph Graph => Node.Graph;
+
+
+            public Node Target { get; set; }
+            public LinkType Type { get; set; }
+            public Traversal Traversal { get; set; }
+            public Edict Edict { get; set; }
+
+            internal Link(Node node)
+            {
+                this.Node = node;
+            }
+        }
+
+        public enum LinkType : ushort
+        {
+            Walk = 0,
+            LongJump = 1,
+            Teleport = 2,
+            WalkOffLedge = 3,
+            Pusher = 4,
+            BarrierJump = 5,
+            Elevator = 6,
+            Train = 7,
+            ManualJump = 8,
+            Unknown = 9
+        }
+
+        public class Node : IdentifiedComponentBase
+        {
+            public const int MaximumLinks = 12;
+
+            [Obsolete("Use Graph property instead")]
+            public NavigationGraph Owner => Graph;
+
+            /// <summary>
+            /// Returns the <see cref="NavigationGraph" /> where this node belongs to.
+            /// </summary>
+            public NavigationGraph Graph { get; internal set; }
+
+            public NodeFlags Flags { get; set; }
+            public Vector3 Origin { get; set; }
+            public ushort Radius { get; set; }
+            public IdentifiedComponentList<Link> Links { get; private set; } = new IdentifiedComponentList<Link>(MaximumLinks);
+
+            internal Node(int id, NavigationGraph graph)
+            {
+                this.Id = id;
+                this.Graph = graph;
+            }
+
+
+            public Link NewLink()
+            {
+                if (Links.Count >= MaximumLinks)
+                    throw new InvalidOperationException("Maximum number of links reached");
+
+                var link = new Link(this);
+                Links.Add(link);
+                return link;
+            }
+        }
+
+        [Flags]
+        public enum NodeFlags : ushort
+        {
+            None = 0,
+            Teleporter = 1 << 0,
+            Pusher = 1 << 1,
+            ElevatorTop = 1 << 2,
+            ElevatorBottom = 1 << 3,
+            Underwater = 1 << 4,
+            Hazard = 1 << 5
+        }
+
+        public class Traversal
+        {
+            public Vector3 Point1 { get; set; }
+            public Vector3 Point2 { get; set; }
+            public Vector3 Point3 { get; set; }
+        }
+
         public IdentifiedComponentList<Node> Nodes { get; private set; }
 
 
@@ -124,7 +230,7 @@ namespace QuakeNavSharp.Navigation
             for (var i = 0; i < Nodes.Count; i++)
             {
                 var node = Nodes[i];
-                var fileNode = new NavFileNode();
+                var fileNode = new NavFile.Node();
 
                 fileNode.Flags = (ushort)node.Flags;
                 fileNode.Radius = node.Radius;
@@ -136,7 +242,7 @@ namespace QuakeNavSharp.Navigation
                 for (var l = 0; l < node.Links.Count; l++)
                 {
                     var link = node.Links[l];
-                    var fileLink = new NavFileLink();
+                    var fileLink = new NavFile.Link();
                     var linkId = file.Links.Count;
 
                     fileLink.Type = (ushort)link.Type;
@@ -148,7 +254,7 @@ namespace QuakeNavSharp.Navigation
                         fileLink.TraversalIndex = (ushort)file.Traversals.Count;
 
                         var traversal = link.Traversal;
-                        var fileTraversal = new NavFileTraversal();
+                        var fileTraversal = new NavFile.Traversal();
 
                         fileTraversal.Point1 = traversal.Point1;
                         fileTraversal.Point2 = traversal.Point2;
@@ -166,7 +272,7 @@ namespace QuakeNavSharp.Navigation
                     if (link.Edict != null)
                     {
                         var edict = link.Edict;
-                        var fileEdict = new NavFileEdict();
+                        var fileEdict = new NavFile.Edict();
 
                         fileEdict.LinkId = (ushort)linkId;
                         fileEdict.Mins = edict.Mins;
@@ -181,7 +287,7 @@ namespace QuakeNavSharp.Navigation
                 }
 
 
-                file.NodeOrigins.Add(new NavFileNodeOrigin()
+                file.NodeOrigins.Add(new NavFile.NodeOrigin()
                 {
                     Origin = node.Origin
                 });
