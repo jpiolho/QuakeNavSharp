@@ -19,9 +19,6 @@ namespace QuakeNavSharp.Navigation
 
         public class Link : IdentifiedComponentBase
         {
-            [Obsolete("Use Node property instead")]
-            public Node Parent => Node;
-
             /// <summary>
             /// Returns the Node where this link belongs to.
             /// </summary>
@@ -61,9 +58,6 @@ namespace QuakeNavSharp.Navigation
         public class Node : IdentifiedComponentBase
         {
             public const int MaximumLinks = 12;
-
-            [Obsolete("Use Graph property instead")]
-            public NavigationGraph Owner => Graph;
 
             /// <summary>
             /// Returns the <see cref="NavigationGraph" /> where this node belongs to.
