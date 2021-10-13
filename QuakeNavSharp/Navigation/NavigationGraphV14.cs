@@ -1,4 +1,5 @@
 ﻿using QuakeNavSharp.Files;
+using QuakeNavSharp.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,14 +7,15 @@ using System.Numerics;
 
 namespace QuakeNavSharp.Navigation
 {
-    public class NavigationGraph
+    public class NavigationGraphV14
     {
         public class Edict
         {
             public Vector3 Mins { get; set; }
             public Vector3 Maxs { get; set; }
 
-            public int EntityId { get; set; }
+            public int Targetname { get; set; }
+            public int Classname { get; set; }
         }
 
         public class Link : IdentifiedComponentBase
@@ -26,7 +28,7 @@ namespace QuakeNavSharp.Navigation
             /// <summary>
             /// Returns the graph where this link belongs to.
             /// </summary>
-            public NavigationGraph Graph => Node.Graph;
+            public NavigationGraphV14 Graph => Node.Graph;
 
 
             public Node Target { get; set; }
@@ -61,14 +63,14 @@ namespace QuakeNavSharp.Navigation
             /// <summary>
             /// Returns the <see cref="NavigationGraph" /> where this node belongs to.
             /// </summary>
-            public NavigationGraph Graph { get; internal set; }
+            public NavigationGraphV14 Graph { get; internal set; }
 
             public NodeFlags Flags { get; set; }
             public Vector3 Origin { get; set; }
             public ushort Radius { get; set; }
             public IdentifiedComponentList<Link> Links { get; private set; } = new IdentifiedComponentList<Link>(MaximumLinks);
 
-            internal Node(int id, NavigationGraph graph)
+            internal Node(int id, NavigationGraphV14 graph)
             {
                 this.Id = id;
                 this.Graph = graph;
@@ -108,7 +110,7 @@ namespace QuakeNavSharp.Navigation
         public IdentifiedComponentList<Node> Nodes { get; private set; }
 
 
-        public NavigationGraph()
+        public NavigationGraphV14()
         {
             Nodes = new IdentifiedComponentList<Node>();
             Nodes.Removing += Nodes_Removing;
@@ -135,94 +137,17 @@ namespace QuakeNavSharp.Navigation
         }
 
 
-        public void LoadFromFile(NavFile file)
+
+        public NavFileV14 ToNavFile()
         {
-            Nodes.Clear();
-            Nodes.Capacity = file.Nodes.Count;
-
-            // Create nodes
-            for (var i = 0; i < file.Nodes.Count; i++)
-            {
-                var fileNode = file.Nodes[i];
-                var fileNodeOrigin = file.NodeOrigins[i];
-
-                var node = this.NewNode();
-                node.Flags = (NodeFlags)fileNode.Flags;
-                node.Origin = fileNodeOrigin.Origin;
-                node.Radius = fileNode.Radius;
-            }
-
-            // Make a dictionary of link id -> edict id
-            var linkToEdict = new Dictionary<int, int>();
-            for (var i = 0; i < file.Edicts.Count; i++)
-            {
-                var fileEdict = file.Edicts[i];
-                linkToEdict[fileEdict.LinkId] = i;
-            }
-
-            // Create links
-            for (var i = 0; i < file.Nodes.Count; i++)
-            {
-                var fileNode = file.Nodes[i];
-                var node = Nodes[i];
-
-                var linkStart = fileNode.ConnectionStartIndex;
-                var linkEnd = linkStart + fileNode.ConnectionCount;
-                for (var l = linkStart; l < linkEnd; l++)
-                {
-                    var fileLink = file.Links[l];
-                    var link = node.NewLink();
-
-                    link.Type = (LinkType)fileLink.Type;
-                    link.Target = Nodes[fileLink.Destination];
-
-                    // Add traversal if available
-                    if (fileLink.TraversalIndex != 0xFFFF)
-                    {
-                        var fileTraversal = file.Traversals[fileLink.TraversalIndex];
-
-                        link.Traversal = new Traversal()
-                        {
-                            Point1 = fileTraversal.Point1,
-                            Point2 = fileTraversal.Point2,
-                            Point3 = fileTraversal.Point3
-                        };
-                    }
-
-                    // Add edict if available
-                    if (linkToEdict.TryGetValue(l, out var edictId))
-                    {
-                        var fileEdict = file.Edicts[edictId];
-
-                        link.Edict = new Edict()
-                        {
-                            Mins = fileEdict.Mins,
-                            Maxs = fileEdict.Maxs,
-                            EntityId = fileEdict.EntityId
-                        };
-                    }
-
-                }
-            }
-        }
-
-        public static NavigationGraph FromNavFile(NavFile file)
-        {
-            var graph = new NavigationGraph();
-            graph.LoadFromFile(file);
-            return graph;
-        }
-
-        public NavFile ToNavFile()
-        {
-            var file = new NavFile();
+            var file = new NavFileV14();
 
             // Add nodes
             file.Nodes.Capacity = Nodes.Count;
             for (var i = 0; i < Nodes.Count; i++)
             {
                 var node = Nodes[i];
-                var fileNode = new NavFile.Node();
+                var fileNode = new NavFileV14.Node();
 
                 fileNode.Flags = (ushort)node.Flags;
                 fileNode.Radius = node.Radius;
@@ -234,7 +159,7 @@ namespace QuakeNavSharp.Navigation
                 for (var l = 0; l < node.Links.Count; l++)
                 {
                     var link = node.Links[l];
-                    var fileLink = new NavFile.Link();
+                    var fileLink = new NavFileV14.Link();
                     var linkId = file.Links.Count;
 
                     fileLink.Type = (ushort)link.Type;
@@ -246,7 +171,7 @@ namespace QuakeNavSharp.Navigation
                         fileLink.TraversalIndex = (ushort)file.Traversals.Count;
 
                         var traversal = link.Traversal;
-                        var fileTraversal = new NavFile.Traversal();
+                        var fileTraversal = new NavFileV14.Traversal();
 
                         fileTraversal.Point1 = traversal.Point1;
                         fileTraversal.Point2 = traversal.Point2;
@@ -264,12 +189,13 @@ namespace QuakeNavSharp.Navigation
                     if (link.Edict != null)
                     {
                         var edict = link.Edict;
-                        var fileEdict = new NavFile.Edict();
+                        var fileEdict = new NavFileV14.Edict();
 
                         fileEdict.LinkId = (ushort)linkId;
                         fileEdict.Mins = edict.Mins;
                         fileEdict.Maxs = edict.Maxs;
-                        fileEdict.EntityId = edict.EntityId;
+                        fileEdict.Classname = edict.Classname;
+                        fileEdict.Targetname = edict.Targetname;
 
                         file.Edicts.Add(fileEdict);
                     }
@@ -278,7 +204,7 @@ namespace QuakeNavSharp.Navigation
                 }
 
 
-                file.NodeOrigins.Add(new NavFile.NodeOrigin()
+                file.NodeOrigins.Add(new NavFileV14.NodeOrigin()
                 {
                     Origin = node.Origin
                 });
@@ -286,6 +212,67 @@ namespace QuakeNavSharp.Navigation
             }
 
             return file;
+        }
+
+        /// <summary>
+        /// Converts this <see cref="NavigationGraphV14"/> to a <see cref="NavJsonV1"/> object.
+        /// </summary>
+        public NavJsonV1 ToNavJson()
+        {
+            var json = new NavJsonV1();
+
+            json.Version = 1;
+            json.Nodes = new NavJsonV1.Node[this.Nodes.Count];
+
+            // Create nodes
+            for (var nodeId = 0; nodeId < this.Nodes.Count; nodeId++)
+            {
+                var node = this.Nodes[nodeId];
+                var jsonNode = new NavJsonV1.Node();
+
+                jsonNode.Flags = (int)node.Flags;
+                jsonNode.Radius = node.Radius;
+                jsonNode.Origin = node.Origin;
+
+                // Create links
+                jsonNode.Links = new NavJsonV1.Link[node.Links.Count];
+                for (var linkId = 0; linkId < node.Links.Count; linkId++)
+                {
+                    var link = node.Links[linkId];
+                    var jsonLink = new NavJsonV1.Link();
+
+                    jsonLink.Target = link.Target.Origin;
+                    jsonLink.Type = (int)link.Type;
+
+                    // Create traversal
+                    if (link.Traversal != null)
+                    {
+                        jsonLink.Traversal = new Vector3[] {
+                            link.Traversal.Point1,
+                            link.Traversal.Point2,
+                            link.Traversal.Point3
+                        };
+                    }
+
+                    // Create edict
+                    if (link.Edict != null)
+                    {
+                        jsonLink.Edict = new NavJsonV1.Edict()
+                        {
+                            Maxs = link.Edict.Maxs,
+                            Mins = link.Edict.Mins,
+                            Targetname = link.Edict.Targetname,
+                            Classname = link.Edict.Classname
+                        };
+                    }
+
+                    jsonNode.Links[linkId] = jsonLink;
+                }
+
+                json.Nodes[nodeId] = jsonNode;
+            }
+
+            return json;
         }
     }
 }

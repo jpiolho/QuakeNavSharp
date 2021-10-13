@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace QuakeNavSharp.Files
 {
-    public class NavFile : NavFileBase
+    public class NavFileV14 : NavFileBase
     {
-        public override int Version => 15;
+        public override int Version => 14;
 
         private const int HEADER_SIZE = 20;
 
@@ -17,7 +17,7 @@ namespace QuakeNavSharp.Files
         public class Edict : NavFileComponent<Edict>
         {
             internal const int HEADER_SIZE = 4;
-            internal const int SIZE = 30;
+            internal const int SIZE = 34;
 
             /// <summary>
             /// Link id to which this edict belongs to.
@@ -35,18 +35,22 @@ namespace QuakeNavSharp.Files
             public Vector3 Maxs { get; set; }
 
             /// <summary>
-            /// Entity id for the edict as the following formula: -entity_index - 1.
-            /// For example, func_train_17 becomes -18.
+            /// Engine string id for the edict targetname.
             /// </summary>
-            public int EntityId { get; set; }
+            public int Targetname { get; set; }
 
+            /// <summary>
+            /// Engine string id for the edict classname.
+            /// </summary>
+            public int Classname { get; set; }
 
             internal override Edict Read(BinaryReader reader)
             {
                 this.LinkId = reader.ReadUInt16();
                 this.Mins = reader.ReadVector3();
                 this.Maxs = reader.ReadVector3();
-                this.EntityId = reader.ReadInt32();
+                this.Targetname = reader.ReadInt32();
+                this.Classname = reader.ReadInt32();
 
                 return this;
             }
@@ -56,7 +60,8 @@ namespace QuakeNavSharp.Files
                 writer.Write((ushort)this.LinkId);
                 writer.Write((Vector3)this.Mins);
                 writer.Write((Vector3)this.Maxs);
-                writer.Write((int)this.EntityId);
+                writer.Write((int)this.Targetname);
+                writer.Write((int)this.Classname);
             }
         }
 
@@ -266,7 +271,7 @@ namespace QuakeNavSharp.Files
                     throw new InvalidDataException("The provided stream is not in NAV2 format");
 
                 var version = reader.ReadUInt32();
-                if (version != Version)
+                if (version != 14)
                     throw new InvalidDataException($"Unsupported NAV2 version {version}");
 
                 var nodeCount = reader.ReadUInt32();
@@ -317,9 +322,9 @@ namespace QuakeNavSharp.Files
         }
 
 
-        public NavigationGraph ToNavigationGraph()
+        public NavigationGraphV14 ToNavigationGraph()
         {
-            var navGraph = new NavigationGraph();
+            var navGraph = new NavigationGraphV14();
 
             navGraph.Nodes.Clear();
             navGraph.Nodes.Capacity = this.Nodes.Count;
@@ -331,7 +336,7 @@ namespace QuakeNavSharp.Files
                 var fileNodeOrigin = this.NodeOrigins[i];
 
                 var node = navGraph.NewNode();
-                node.Flags = (NavigationGraph.NodeFlags)fileNode.Flags;
+                node.Flags = (NavigationGraphV14.NodeFlags)fileNode.Flags;
                 node.Origin = fileNodeOrigin.Origin;
                 node.Radius = fileNode.Radius;
             }
@@ -357,7 +362,7 @@ namespace QuakeNavSharp.Files
                     var fileLink = this.Links[l];
                     var link = node.NewLink();
 
-                    link.Type = (NavigationGraph.LinkType)fileLink.Type;
+                    link.Type = (NavigationGraphV14.LinkType)fileLink.Type;
                     link.Target = navGraph.Nodes[fileLink.Destination];
 
                     // Add traversal if available
@@ -365,7 +370,7 @@ namespace QuakeNavSharp.Files
                     {
                         var fileTraversal = this.Traversals[fileLink.TraversalIndex];
 
-                        link.Traversal = new NavigationGraph.Traversal()
+                        link.Traversal = new NavigationGraphV14.Traversal()
                         {
                             Point1 = fileTraversal.Point1,
                             Point2 = fileTraversal.Point2,
@@ -378,11 +383,12 @@ namespace QuakeNavSharp.Files
                     {
                         var fileEdict = this.Edicts[edictId];
 
-                        link.Edict = new NavigationGraph.Edict()
+                        link.Edict = new NavigationGraphV14.Edict()
                         {
                             Mins = fileEdict.Mins,
                             Maxs = fileEdict.Maxs,
-                            EntityId = fileEdict.EntityId,
+                            Targetname = fileEdict.Targetname,
+                            Classname = fileEdict.Classname
                         };
                     }
 

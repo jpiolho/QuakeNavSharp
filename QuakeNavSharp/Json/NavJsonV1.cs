@@ -10,13 +10,14 @@ using System.Threading.Tasks;
 
 namespace QuakeNavSharp.Json
 {
-    public class NavJson
+    public class NavJsonV1
     {
         public class Edict
         {
             public Vector3 Mins { get; set; }
             public Vector3 Maxs { get; set; }
-            public int EntityId { get; set; }
+            public int Targetname { get; set; }
+            public int Classname { get; set; }
         }
 
         public class Link
@@ -51,7 +52,7 @@ namespace QuakeNavSharp.Json
 
         private static JsonSerializerOptions _serializerOptions;
 
-        static NavJson()
+        static NavJsonV1()
         {
             _serializerOptions = new JsonSerializerOptions();
             _serializerOptions.Converters.Add(new Vector3JsonConverter());
@@ -79,24 +80,24 @@ namespace QuakeNavSharp.Json
         /// <summary>
         /// Convert this <see cref="NavJson"/> to a <see cref="NavigationGraph"/>.
         /// </summary>
-        public NavigationGraph ToNavigationGraph()
+        public NavigationGraphV14 ToNavigationGraph()
         {
             return BuildGraphFromJson(this);
         }
 
 
-        private static NavigationGraph BuildGraphFromJson(NavJson json)
+        private static NavigationGraphV14 BuildGraphFromJson(NavJsonV1 json)
         {
-            var navigation = new NavigationGraph();
+            var navigation = new NavigationGraphV14();
 
 
-            var nodeOriginDictionary = new Dictionary<Vector3, NavigationGraph.Node>();
+            var nodeOriginDictionary = new Dictionary<Vector3, NavigationGraphV14.Node>();
 
             // Add nodes
             foreach (var jsonNode in json.Nodes)
             {
                 var node = navigation.NewNode();
-                node.Flags = (NavigationGraph.NodeFlags)jsonNode.Flags;
+                node.Flags = (NavigationGraphV14.NodeFlags)jsonNode.Flags;
                 node.Radius = (ushort)jsonNode.Radius;
                 node.Origin = jsonNode.Origin;
 
@@ -112,12 +113,12 @@ namespace QuakeNavSharp.Json
                 foreach (var jsonLink in jsonNode.Links)
                 {
                     var link = node.NewLink();
-                    link.Type = (NavigationGraph.LinkType)jsonLink.Type;
+                    link.Type = (NavigationGraphV14.LinkType)jsonLink.Type;
                     link.Target = nodeOriginDictionary[jsonLink.Target];
 
                     if (jsonLink.Traversal != null)
                     {
-                        link.Traversal = new NavigationGraph.Traversal()
+                        link.Traversal = new NavigationGraphV14.Traversal()
                         {
                             Point1 = jsonLink.Traversal[0],
                             Point2 = jsonLink.Traversal[1],
@@ -127,11 +128,12 @@ namespace QuakeNavSharp.Json
 
                     if (jsonLink.Edict != null)
                     {
-                        link.Edict = new NavigationGraph.Edict()
+                        link.Edict = new NavigationGraphV14.Edict()
                         {
                             Mins = jsonLink.Edict.Mins,
                             Maxs = jsonLink.Edict.Maxs,
-                            EntityId = jsonLink.Edict.EntityId,
+                            Targetname = jsonLink.Edict.Targetname,
+                            Classname = jsonLink.Edict.Classname,
                         };
                     }
                 }
