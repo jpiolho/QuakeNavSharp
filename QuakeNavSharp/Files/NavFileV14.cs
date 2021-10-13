@@ -321,7 +321,7 @@ namespace QuakeNavSharp.Files
             }
         }
 
-
+        public override NavigationGraphBase ToNavigationGraphGeneric() => ToNavigationGraph();
         public NavigationGraphV14 ToNavigationGraph()
         {
             var navGraph = new NavigationGraphV14();

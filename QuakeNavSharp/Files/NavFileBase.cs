@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using QuakeNavSharp.Navigation;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,5 +17,7 @@ namespace QuakeNavSharp.Files
 
         public abstract void Save(Stream stream);
         public abstract Task SaveAsync(Stream stream, CancellationToken cancellationToken = default);
+
+        public abstract NavigationGraphBase ToNavigationGraphGeneric();
     }
 }

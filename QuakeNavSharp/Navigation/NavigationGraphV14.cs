@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace QuakeNavSharp.Navigation
 {
-    public class NavigationGraphV14
+    public class NavigationGraphV14 : NavigationGraphBase
     {
         public class Edict
         {
@@ -137,7 +137,7 @@ namespace QuakeNavSharp.Navigation
         }
 
 
-
+        public override NavFileBase ToNavFileGeneric() => ToNavFile();
         public NavFileV14 ToNavFile()
         {
             var file = new NavFileV14();
@@ -214,6 +214,7 @@ namespace QuakeNavSharp.Navigation
             return file;
         }
 
+        public override NavJsonBase ToNavJsonGeneric() => ToNavJson();
         /// <summary>
         /// Converts this <see cref="NavigationGraphV14"/> to a <see cref="NavJsonV1"/> object.
         /// </summary>
@@ -221,7 +222,6 @@ namespace QuakeNavSharp.Navigation
         {
             var json = new NavJsonV1();
 
-            json.Version = 1;
             json.Nodes = new NavJsonV1.Node[this.Nodes.Count];
 
             // Create nodes

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace QuakeNavSharp.Json
 {
-    public class NavJson
+    public class NavJson : NavJsonBase
     {
         public class Edict
         {
@@ -43,27 +43,17 @@ namespace QuakeNavSharp.Json
             public int Radius { get; set; }
         }
 
-        public int Version { get; set; }
+        public int Version { get; private set; } = 2;
         public MapInfo Map { get; set; }
         public string[] Contributors { get; set; }
         public string Comments { get; set; }
         public Node[] Nodes { get; set; }
 
-        private static JsonSerializerOptions _serializerOptions;
-
-        static NavJson()
-        {
-            _serializerOptions = new JsonSerializerOptions();
-            _serializerOptions.Converters.Add(new Vector3JsonConverter());
-
-            _serializerOptions.WriteIndented = true;
-            _serializerOptions.IgnoreNullValues = true;
-        }
 
         /// <summary>
         /// Serializes the <see cref="NavJson"/> object to json.
         /// </summary>
-        public string ToJson()
+        public override string ToJson()
         {
             return JsonSerializer.Serialize(this,_serializerOptions);
         }
@@ -81,19 +71,13 @@ namespace QuakeNavSharp.Json
         /// </summary>
         public NavigationGraph ToNavigationGraph()
         {
-            return BuildGraphFromJson(this);
-        }
-
-
-        private static NavigationGraph BuildGraphFromJson(NavJson json)
-        {
             var navigation = new NavigationGraph();
 
 
             var nodeOriginDictionary = new Dictionary<Vector3, NavigationGraph.Node>();
 
             // Add nodes
-            foreach (var jsonNode in json.Nodes)
+            foreach (var jsonNode in this.Nodes)
             {
                 var node = navigation.NewNode();
                 node.Flags = (NavigationGraph.NodeFlags)jsonNode.Flags;
@@ -104,10 +88,10 @@ namespace QuakeNavSharp.Json
             }
 
             // Add links
-            for (var i = 0; i < json.Nodes.Length; i++)
+            for (var i = 0; i < this.Nodes.Length; i++)
             {
                 var node = navigation.Nodes[i];
-                var jsonNode = json.Nodes[i];
+                var jsonNode = this.Nodes[i];
 
                 foreach (var jsonLink in jsonNode.Links)
                 {
@@ -139,6 +123,8 @@ namespace QuakeNavSharp.Json
 
             return navigation;
         }
+
+        public override NavigationGraphBase ToNavigationGraphGeneric() => ToNavigationGraph();
 
     }
 }
