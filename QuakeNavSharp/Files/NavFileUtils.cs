@@ -19,7 +19,7 @@ namespace QuakeNavSharp.Files
         };
 
 
-        public static async Task<NavFileBase> LoadAnyVersionAsync(Stream stream,CancellationToken cancellationToken)
+        public static async Task<NavFileBase> LoadAnyVersionAsync(Stream stream,CancellationToken cancellationToken = default)
         {
             using (var ms = new MemoryStream())
             using (var reader = new BinaryReader(ms))
@@ -33,7 +33,7 @@ namespace QuakeNavSharp.Files
 
                 // Figure out the specific version
                 var version = reader.ReadUInt32();
-                if(_versionToTypeDictionary.TryGetValue(version,out var type))
+                if(!_versionToTypeDictionary.TryGetValue(version,out var type))
                     throw new InvalidDataException($"Unsupported NAV2 version {version}");
 
                 // Create the right NavFile instance

@@ -28,14 +28,6 @@ namespace QuakeNavSharp.Json
             public Edict Edict { get; set; }
         }
 
-        public class MapInfo
-        {
-            public string Name { get; set; }
-            public string Author { get; set; }
-            public string Filename { get; set; }
-            public string[] Urls { get; set; }
-        }
-
         public class Node
         {
             public Vector3 Origin { get; set; }
@@ -44,10 +36,7 @@ namespace QuakeNavSharp.Json
             public int Radius { get; set; }
         }
 
-        public int Version { get; private set; } = 1;
-        public MapInfo Map { get; set; }
-        public string[] Contributors { get; set; }
-        public string Comments { get; set; }
+        public override int Version => 1;
         public Node[] Nodes { get; set; }
 
         /// <summary>

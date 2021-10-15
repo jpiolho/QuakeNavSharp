@@ -215,7 +215,7 @@ namespace QuakeNavSharp.Files
             {
                 // Write header
                 writer.Write(new char[] { 'N', 'A', 'V', '2' });
-                writer.Write((int)14); // Version
+                writer.Write((int)15); // Version
                 writer.Write((int)Nodes.Count);
                 writer.Write((int)Links.Count);
                 writer.Write((int)Traversals.Count);

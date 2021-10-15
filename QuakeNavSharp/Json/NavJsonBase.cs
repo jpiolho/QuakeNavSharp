@@ -10,6 +10,15 @@ namespace QuakeNavSharp.Json
 {
     public abstract class NavJsonBase
     {
+        public class MapInfo
+        {
+            public string Name { get; set; }
+            public string Author { get; set; }
+            public string Filename { get; set; }
+            public string[] Urls { get; set; }
+        }
+
+
         internal static JsonSerializerOptions _serializerOptions;
 
         static NavJsonBase()
@@ -20,6 +29,11 @@ namespace QuakeNavSharp.Json
             _serializerOptions.WriteIndented = true;
             _serializerOptions.IgnoreNullValues = true;
         }
+
+        public abstract int Version { get; }
+        public MapInfo Map { get; set; }
+        public string[] Contributors { get; set; }
+        public string Comments { get; set; }
 
         public abstract string ToJson();
 
