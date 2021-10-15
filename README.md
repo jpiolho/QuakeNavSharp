@@ -7,6 +7,7 @@ A .NET Core library to handle Quake 2021 (Enhanced) bot navigation files.
 * **.nav file support**: Manipulate .nav files directly if you wish with a 1:1 representation of the binary structures. Supports reading and writing.
 * **OOP navigation graph representation**: Edit, view and create the navigation graph with references instead of ids and logical hierarchy.
 * **NavJson support**: Convert navigation graphs from and to NavJson format. A git friendly format that represents a navigation graph.
+* **Multiple version**: Supports NAV 14 and 15
 
 
 ## Quickstart
@@ -20,10 +21,10 @@ A .NET Core library to handle Quake 2021 (Enhanced) bot navigation files.
 // Loading a nav file
 NavFile navFile;
 using(var fs = new FileStream("mymap.nav",FileMode.Open))
-    navFile = await NavFile.FromStreamAsync(fs);
+    navFile = await NavFile.LoadAsync(fs);
 
 // Convert it to a navigation graph
-var graph = NavigationGraph.FromNavFile(navFile);
+var graph = navFile.ToNavigationGraph();
 
 // Adding a new node
 var node1 = graph.NewNode();
@@ -39,7 +40,11 @@ using(var fs = new FileStream("mymap.nav",FileMode.Create))
     graph.ToNavFile().SaveAsync(fs);
 
 // Convert the graph to NavJson json
-var json = NavJson.FromNavigationGraph(graph).ToJson();
+var json = graph.ToNavJson().ToJson();
+
+// Load any NAV version
+using(var fs = new FileStream("mymap_v14.nav",FileMode.Open))
+  graph = NavFileUtils.LoadAnyVersionAsync(fs);
 ```
 
 
@@ -56,7 +61,7 @@ It also includes some information about the map, contributors and possible urls 
 Here's a snippet:
 ```json
 {
-  "Version": 0,
+  "Version": 2,
   "Map": {
     "Name": "The Slipgate Complex",
     "Author": "John Romero",
@@ -83,8 +88,7 @@ Here's a snippet:
           "Edict": {
             "Mins": [719,31,47],
             "Maxs": [785,49,113],
-            "Targetname": 0,
-            "Classname": -75
+            "EntityId": -34
           }
         },
         {
