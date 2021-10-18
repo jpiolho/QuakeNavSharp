@@ -37,6 +37,10 @@ namespace QuakeNavSharp.Json
         }
 
         public override int Version => 2;
+        public override MapInfo Map { get; set; }
+        public override string[] Contributors { get; set; }
+        public override string Comments { get; set; }
+
         public Node[] Nodes { get; set; }
 
 

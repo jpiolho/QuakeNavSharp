@@ -26,14 +26,16 @@ namespace QuakeNavSharp.Json
             _serializerOptions = new JsonSerializerOptions();
             _serializerOptions.Converters.Add(new Vector3JsonConverter());
 
+            _serializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+
             _serializerOptions.WriteIndented = true;
             _serializerOptions.IgnoreNullValues = true;
         }
 
         public abstract int Version { get; }
-        public MapInfo Map { get; set; }
-        public string[] Contributors { get; set; }
-        public string Comments { get; set; }
+        public abstract MapInfo Map { get; set; }
+        public abstract string[] Contributors { get; set; }
+        public abstract string Comments { get; set; }
 
         public abstract string ToJson();
 
