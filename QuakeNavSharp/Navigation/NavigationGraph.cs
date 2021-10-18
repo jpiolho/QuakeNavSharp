@@ -95,7 +95,9 @@ namespace QuakeNavSharp.Navigation
             ElevatorTop = 1 << 2,
             ElevatorBottom = 1 << 3,
             Underwater = 1 << 4,
-            Hazard = 1 << 5
+            Hazard = 1 << 5,
+            CheckForFloor = 1 << 6,
+            CheckForSolid = 1 << 7
         }
 
         public class Traversal
