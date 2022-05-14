@@ -138,16 +138,16 @@ namespace QuakeNavSharp.Navigation
 
 
         public override NavFileBase ToNavFileGeneric() => ToNavFile();
-        public NavFile ToNavFile()
+        public NavFileV15 ToNavFile()
         {
-            var file = new NavFile();
+            var file = new NavFileV15();
 
             // Add nodes
             file.Nodes.Capacity = Nodes.Count;
             for (var i = 0; i < Nodes.Count; i++)
             {
                 var node = Nodes[i];
-                var fileNode = new NavFile.Node();
+                var fileNode = new NavFileV15.Node();
 
                 fileNode.Flags = (ushort)node.Flags;
                 fileNode.Radius = node.Radius;
@@ -159,7 +159,7 @@ namespace QuakeNavSharp.Navigation
                 for (var l = 0; l < node.Links.Count; l++)
                 {
                     var link = node.Links[l];
-                    var fileLink = new NavFile.Link();
+                    var fileLink = new NavFileV15.Link();
                     var linkId = file.Links.Count;
 
                     fileLink.Type = (ushort)link.Type;
@@ -171,7 +171,7 @@ namespace QuakeNavSharp.Navigation
                         fileLink.TraversalIndex = (ushort)file.Traversals.Count;
 
                         var traversal = link.Traversal;
-                        var fileTraversal = new NavFile.Traversal();
+                        var fileTraversal = new NavFileV15.Traversal();
 
                         fileTraversal.Point1 = traversal.Point1;
                         fileTraversal.Point2 = traversal.Point2;
@@ -189,7 +189,7 @@ namespace QuakeNavSharp.Navigation
                     if (link.Edict != null)
                     {
                         var edict = link.Edict;
-                        var fileEdict = new NavFile.Edict();
+                        var fileEdict = new NavFileV15.Edict();
 
                         fileEdict.LinkId = (ushort)linkId;
                         fileEdict.Mins = edict.Mins;
@@ -203,7 +203,7 @@ namespace QuakeNavSharp.Navigation
                 }
 
 
-                file.NodeOrigins.Add(new NavFile.NodeOrigin()
+                file.NodeOrigins.Add(new NavFileV15.NodeOrigin()
                 {
                     Origin = node.Origin
                 });
