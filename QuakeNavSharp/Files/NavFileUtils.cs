@@ -14,7 +14,8 @@ namespace QuakeNavSharp.Files
 
         private static Dictionary<uint, Type> _versionToTypeDictionary = new Dictionary<uint, Type>()
         {
-            { 15, typeof(NavFile) },
+            { 17, typeof(NavFile) },
+            { 15, typeof(NavFileV15) },
             { 14, typeof(NavFileV14) }
         };
 

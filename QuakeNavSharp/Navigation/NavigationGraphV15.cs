@@ -7,18 +7,13 @@ using System.Numerics;
 
 namespace QuakeNavSharp.Navigation
 {
-    public class NavigationGraph : NavigationGraphBase
+    public class NavigationGraphV15 : NavigationGraphBase
     {
         public class Edict
         {
             public Vector3 Mins { get; set; }
             public Vector3 Maxs { get; set; }
             public int EntityId { get; set; }
-        }
-
-        public class GraphSettings
-        {
-            public float Heuristic { get; set; }
         }
 
         public class Link : IdentifiedComponentBase
@@ -31,7 +26,7 @@ namespace QuakeNavSharp.Navigation
             /// <summary>
             /// Returns the graph where this link belongs to.
             /// </summary>
-            public NavigationGraph Graph => Node.Graph;
+            public NavigationGraphV15 Graph => Node.Graph;
 
 
             public Node Target { get; set; }
@@ -66,14 +61,14 @@ namespace QuakeNavSharp.Navigation
             /// <summary>
             /// Returns the <see cref="NavigationGraph" /> where this node belongs to.
             /// </summary>
-            public NavigationGraph Graph { get; internal set; }
+            public NavigationGraphV15 Graph { get; internal set; }
 
             public NodeFlags Flags { get; set; }
             public Vector3 Origin { get; set; }
             public ushort Radius { get; set; }
             public IdentifiedComponentList<Link> Links { get; private set; } = new IdentifiedComponentList<Link>(MaximumLinks);
 
-            internal Node(int id, NavigationGraph graph)
+            internal Node(int id, NavigationGraphV15 graph)
             {
                 this.Id = id;
                 this.Graph = graph;
@@ -102,8 +97,7 @@ namespace QuakeNavSharp.Navigation
             Underwater = 1 << 4,
             Hazard = 1 << 5,
             CheckForFloor = 1 << 6,
-            CheckForSolid = 1 << 7,
-            NoMonsters = 1 << 8
+            CheckForSolid = 1 << 7
         }
 
         public class Traversal
@@ -115,14 +109,11 @@ namespace QuakeNavSharp.Navigation
 
         public IdentifiedComponentList<Node> Nodes { get; private set; }
 
-        public GraphSettings Settings { get; private set; }
 
-        public NavigationGraph()
+        public NavigationGraphV15()
         {
             Nodes = new IdentifiedComponentList<Node>();
             Nodes.Removing += Nodes_Removing;
-
-            Settings = new GraphSettings();
         }
 
         private void Nodes_Removing(object sender, int index, Node obj)
@@ -150,9 +141,6 @@ namespace QuakeNavSharp.Navigation
         public NavFile ToNavFile()
         {
             var file = new NavFile();
-
-            // Settings
-            file.Heuristic = Settings.Heuristic;
 
             // Add nodes
             file.Nodes.Capacity = Nodes.Count;
@@ -227,35 +215,30 @@ namespace QuakeNavSharp.Navigation
 
         public override NavJsonBase ToNavJsonGeneric() => ToNavJson();
         /// <summary>
-        /// Converts this <see cref="NavigationGraphV14"/> to a <see cref="NavJsonV1"/> object.
+        /// Converts this <see cref="NavigationGraphV15"/> to a <see cref="NavJsonV2"/> object.
         /// </summary>
-        public NavJson ToNavJson()
+        public NavJsonV2 ToNavJson()
         {
-            var json = new NavJson();
+            var json = new NavJsonV2();
 
-            // Settings
-            json.Settings = new NavJson.NavSettings()
-            {
-                Heuristic = this.Settings.Heuristic
-            };
+            json.Nodes = new NavJsonV2.Node[this.Nodes.Count];
 
             // Create nodes
-            json.Nodes = new NavJson.Node[this.Nodes.Count];
             for (var nodeId = 0; nodeId < this.Nodes.Count; nodeId++)
             {
                 var node = this.Nodes[nodeId];
-                var jsonNode = new NavJson.Node();
+                var jsonNode = new NavJsonV2.Node();
 
                 jsonNode.Flags = (int)node.Flags;
                 jsonNode.Radius = node.Radius;
                 jsonNode.Origin = node.Origin;
 
                 // Create links
-                jsonNode.Links = new NavJson.Link[node.Links.Count];
+                jsonNode.Links = new NavJsonV2.Link[node.Links.Count];
                 for (var linkId = 0; linkId < node.Links.Count; linkId++)
                 {
                     var link = node.Links[linkId];
-                    var jsonLink = new NavJson.Link();
+                    var jsonLink = new NavJsonV2.Link();
 
                     jsonLink.Target = link.Target.Origin;
                     jsonLink.Type = (int)link.Type;
@@ -273,7 +256,7 @@ namespace QuakeNavSharp.Navigation
                     // Create edict
                     if (link.Edict != null)
                     {
-                        jsonLink.Edict = new NavJson.Edict()
+                        jsonLink.Edict = new NavJsonV2.Edict()
                         {
                             Maxs = link.Edict.Maxs,
                             Mins = link.Edict.Mins,

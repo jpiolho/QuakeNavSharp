@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace QuakeNavSharp.Files
 {
-    public class NavFile : NavFileBase
+    public class NavFileV15 : NavFileBase
     {
-        public override int Version => 17;
+        public override int Version => 15;
 
-        private const int HEADER_SIZE = 24;
+        private const int HEADER_SIZE = 20;
 
 
         public class Edict : NavFileComponent<Edict>
@@ -202,7 +202,6 @@ namespace QuakeNavSharp.Files
         public List<Link> Links { get; private set; } = new List<Link>();
         public List<Traversal> Traversals { get; private set; } = new List<Traversal>();
         public List<Edict> Edicts { get; private set; } = new List<Edict>();
-        public float Heuristic { get; set; }
 
 
         public override void Save(Stream stream)
@@ -216,11 +215,10 @@ namespace QuakeNavSharp.Files
             {
                 // Write header
                 writer.Write(new char[] { 'N', 'A', 'V', '2' });
-                writer.Write((int)17); // Version
+                writer.Write((int)15); // Version
                 writer.Write((int)Nodes.Count);
                 writer.Write((int)Links.Count);
                 writer.Write((int)Traversals.Count);
-                writer.Write((float)Heuristic);
 
                 // Write nodes
                 foreach (var node in Nodes)
@@ -274,7 +272,7 @@ namespace QuakeNavSharp.Files
                 var nodeCount = reader.ReadUInt32();
                 var linkCount = reader.ReadUInt32();
                 var traversalCount = reader.ReadUInt32();
-                this.Heuristic = reader.ReadSingle();
+
 
                 // Read nodes
                 await stream.ReadAsync(ms, Node.SIZE * (int)nodeCount, true, cancellationToken);
@@ -323,10 +321,6 @@ namespace QuakeNavSharp.Files
         public NavigationGraph ToNavigationGraph()
         {
             var navGraph = new NavigationGraph();
-
-            // Settings
-            navGraph.Settings.Heuristic = this.Heuristic;
-
 
             navGraph.Nodes.Clear();
             navGraph.Nodes.Capacity = this.Nodes.Count;

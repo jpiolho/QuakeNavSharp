@@ -12,7 +12,8 @@ namespace QuakeNavSharp.Json
     {
         private static Dictionary<uint, Type> _versionToTypeDictionary = new Dictionary<uint, Type>()
         {
-            { 2, typeof(NavJson) },
+            { 3, typeof(NavJson) },
+            { 2, typeof(NavJsonV2) },
             { 1, typeof(NavJsonV1) }
         };
 
